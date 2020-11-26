@@ -1,0 +1,24 @@
+{
+  "name": "youtubetogether",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "server": "nodemon server.js"
+  },
+  "author": "Sean Dan",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "concurrently": "^5.3.0",
+    "express": "^4.17.1",
+    "react-player": "^2.7.0",
+    "socket.io": "^3.0.3",
+    "vimeo": "^2.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}
