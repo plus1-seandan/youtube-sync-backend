@@ -1,73 +1,199 @@
-const {addUser, removeUser, getUser, getUsersInRoom} = require('./Users.js');
+const { addUser, removeUser, getUser, getUsersInRoom } = require("./Users.js");
 
-const express = require('express'); 
+const {
+  getAccount,
+  createAccount,
+  verifyAccountCreds,
+  searchAccounts,
+  searchMyFriends,
+  addFriend,
+} = require("./accounts.js");
+const {
+  createRoom,
+  addMember,
+  searchRoom,
+  searchRoomMembers,
+  searchMyRooms,
+} = require("./rooms.js");
 
-const socketio = require('socket.io'); 
+const express = require("express"),
+  app = express(),
+  bodyParser = require("body-parser");
 
-const http = require('http'); 
+// support parsing of application/json type post data
+app.use(bodyParser.json());
 
-const app = express(); 
+//support parsing of application/x-www-form-urlencoded post data
+app.use(bodyParser.urlencoded({ extended: true }));
+const socketio = require("socket.io");
 
-const server = http.createServer(app); 
+const http = require("http");
 
-//const io = socketio(server); 
-const io = require('socket.io')(server, {
-    cors: {
-      origin: '*',
-    }
+// const app = express();
+
+const server = http.createServer(app);
+
+var cors = require("cors");
+
+app.use(cors()); // Use this after the variable declaration
+
+//const io = socketio(server);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+const router = require("./router");
+const { callbackify } = require("util");
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(5001, () => {
+  console.log("Server Listening on port 5001 hey lets go");
+});
+
+io.on("connection", (socket) => {
+  socket.on("join", ({ name, room }) => {
+    const user = addUser({ id: socket.id, name, room });
+
+    socket.join(user.room);
+
+    socket.emit("welcomeMessage", {
+      user: "admin",
+      text: `${user.name}, welcome to room ${user.room}.`,
+    });
+
+    socket.broadcast.to(user.room).emit("joinMessage", {
+      user: "admin",
+      text: `${user.name} has joined!`,
+    });
+
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room),
+    });
+
+    //callback();
   });
 
-const router = require('./router'); 
-const { callbackify } = require('util');
+  socket.on("sendMessage", (message, callback) => {
+    const user = getUser(socket.id);
+    io.to(user.room).emit("message", { user: user.name, text: message });
 
-const PORT = process.env.PORT || 5000
+    callback();
+  });
 
-io.on('connection', (socket) => {
-    socket.on('join', ({ name, room }) => {
-        const user = addUser({ id: socket.id, name, room });
-        
-        socket.join(user.room);
-    
-        socket.emit('message', { user: 'admin', text: `${user.name}, welcome to room ${user.room}.`});
-        socket.broadcast.to(user.room).emit('message', { user: 'admin', text: `${user.name} has joined!` });
-    
-        io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) });
-    
-        //callback();
-    }); 
+  socket.on("change", (data) => {
+    // const user = getUser(socket.id);
+    console.log("trigger change video");
 
-    socket.on('sendMessage', (message, callback) => {
-        const user = getUser(socket.id); 
+    socket.broadcast.to(data.room).emit("changeVideo", data.video);
+  });
 
-        io.to(user.room).emit('message', {user: user.name, text: message}); 
+  socket.on("pause", (room) => {
+    console.log(room);
+    socket.broadcast.to(room).emit("pauseVideo", "pause video");
+  });
 
-        callback(); 
-    })
+  socket.on("play", (room) => {
+    console.log(room);
+    socket.broadcast.to(room).emit("playVideo", "play video");
+  });
 
-    socket.on('change', (video)=>{
-        console.log('change video');
-        user = getUser(socket.id);  
-        console.log(user.room); 
-        socket.broadcast.to(user.room).emit('changeVideo', (video));
-        console.log((video)); 
-    }); 
+  socket.on("seek", (data) => {
+    console.log("the room is ", data.room);
+    console.log(data);
 
-    socket.on('pause', ()=>{
-        console.log('user clicked pause'); 
-        socket.broadcast.emit('pauseVideo', 'hello friends!');
-    })
-    socket.on('play', ()=>{
-        console.log('user clicked play'); 
-        socket.broadcast.emit('playVideo', 'hello friends!');
-    })
-    socket.on('disconnect', ()=>{
-        const user = removeUser(socket.id); 
+    console.log(data.seek);
+    socket.broadcast.to(data.room).emit("seekVideo", data.seek);
+  });
 
-        if(user){
-            io.to(user.room).emit('message', { user: 'admin', text: `${user.name} has left`})
-        }
-    })
-}); 
+  socket.on("disconnect", () => {
+    const user = removeUser(socket.id);
 
-app.use(router); 
-server.listen(PORT, ()=>console.log('server has started on port! : ' + PORT))
+    if (user) {
+      io.to(user.room).emit("message", {
+        user: "admin",
+        text: `${user.name} has left`,
+      });
+    }
+  });
+});
+
+app.post("/create-account", function (req, res) {
+  createAccount(req.body);
+  res.send("success");
+});
+
+app.get("/sign-in", function (req, res) {
+  console.log(req.query.username);
+  const acct = verifyAccountCreds(req.query.username);
+  console.log(acct);
+  if (acct) {
+    if (acct.password == req.query.password) {
+      console.log("success");
+      res.send(acct);
+    } else {
+      console.log("fail");
+      res.send("fail");
+    }
+  } else {
+    console.log("fail");
+    res.send("fail");
+  }
+});
+
+app.get("/search-users", function (req, res) {
+  console.log(req.query.query);
+  const accts = searchAccounts(req.query.query);
+  console.log(accts);
+  res.send(accts);
+});
+
+app.get("/search-room", function (req, res) {
+  console.log(req.query.name);
+  const room = searchRoom(req.query.name);
+  res.send(room);
+});
+
+app.get("/search-roomMembers", function (req, res) {
+  members = [];
+  const roomMembers = searchRoomMembers(req.query.roomId);
+  for (i = 0; i < roomMembers.length; i++) {
+    const acct = getAccount(roomMembers[i].userId);
+    members.push(acct);
+  }
+  console.log(members);
+  res.send(members);
+});
+
+app.get("/search-myRooms", function (req, res) {
+  const myRooms = searchMyRooms(req.query.userId);
+  res.send(myRooms);
+});
+
+app.get("/search-myFriends", function (req, res) {
+  const myFriends = searchMyFriends(req.query.userId);
+  res.send(myFriends);
+});
+
+app.post("/create-room", function (req, res) {
+  createRoom(req.body);
+  res.send("success");
+});
+
+app.post("/add-member", function (req, res) {
+  addMember(req.body.userId, req.body.roomId);
+  res.send("sucess");
+});
+
+app.post("/add-friend", function (req, res) {
+  addFriend(req.body.currUserId, req.body.userId);
+  res.send("success");
+});
+
+app.use(router);
+server.listen(PORT, () =>
+  console.log("server has started on port! hey lets go: " + PORT)
+);
