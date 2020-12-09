@@ -37,10 +37,13 @@ const searchRoomMembers = (roomId) => {
   return roomMembers.filter((roomMember) => roomMember.roomId === roomId);
 };
 
+const setOnline = (userId, roomId) => {};
+
 const addMember = (userId, roomId) => {
   const roomMember = {
     roomId: roomId,
     userId: userId,
+    online: false,
   };
 
   roomMembers.push(roomMember);
@@ -51,4 +54,5 @@ module.exports = {
   searchRoom,
   searchRoomMembers,
   searchMyRooms,
+  searchRoomById,
 };

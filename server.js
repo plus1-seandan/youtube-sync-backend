@@ -1,4 +1,9 @@
-const { addUser, removeUser, getUser, getUsersInRoom } = require("./Users.js");
+const {
+  addSession,
+  endSession,
+  getUser,
+  getActiveSessionsForRoom,
+} = require("./Users.js");
 
 const {
   getAccount,
@@ -14,6 +19,7 @@ const {
   searchRoom,
   searchRoomMembers,
   searchMyRooms,
+  searchRoomById,
 } = require("./rooms.js");
 
 const express = require("express"),
@@ -54,26 +60,33 @@ app.listen(5001, () => {
 });
 
 io.on("connection", (socket) => {
-  socket.on("join", ({ name, room }) => {
-    const user = addUser({ id: socket.id, name, room });
+  socket.on("join", ({ userId, roomId }) => {
+    // const user = addUser({ id: socket.id, name, room });
+    // const user = getAccount(userId);
+    console.log(socket.id, userId, roomId);
+    const session = addSession(socket.id, userId, roomId);
+    const account = getAccount(userId);
+    const room = searchRoomById(roomId);
+    socket.join(session.roomId);
+    console.log("user " + session.userId + " joine room: " + session.roomId);
+    // socket.emit("welcomeMessage", {
+    //   user: "admin",
+    //   text: `${account.email}, welcome to room ${room.name}.`,
+    // });
 
-    socket.join(user.room);
+    // socket.broadcast.to(user.room).emit("joinMessage", {
+    //   user: "admin",
+    //   text: `${user.name} has joined!`,
+    // });
 
-    socket.emit("welcomeMessage", {
-      user: "admin",
-      text: `${user.name}, welcome to room ${user.room}.`,
+    // io.to(user.room).emit("roomData", {
+    //   room: user.room,
+    //   users: getUsersInRoom(user.room),
+    // });
+    io.to(room.id).emit("roomData", {
+      room: room.name,
+      users: getActiveSessionsForRoom(room.id),
     });
-
-    socket.broadcast.to(user.room).emit("joinMessage", {
-      user: "admin",
-      text: `${user.name} has joined!`,
-    });
-
-    io.to(user.room).emit("roomData", {
-      room: user.room,
-      users: getUsersInRoom(user.room),
-    });
-
     //callback();
   });
 
@@ -86,36 +99,36 @@ io.on("connection", (socket) => {
 
   socket.on("change", (data) => {
     // const user = getUser(socket.id);
-    console.log("trigger change video");
+    console.log("trigger change video for: " + data.roomId);
 
-    socket.broadcast.to(data.room).emit("changeVideo", data.video);
+    socket.broadcast.to(data.roomId).emit("changeVideo", data.video);
   });
 
-  socket.on("pause", (room) => {
-    console.log(room);
-    socket.broadcast.to(room).emit("pauseVideo", "pause video");
+  socket.on("pause", (roomId) => {
+    socket.broadcast.to(roomId).emit("pauseVideo", "pause video");
   });
 
-  socket.on("play", (room) => {
-    console.log(room);
-    socket.broadcast.to(room).emit("playVideo", "play video");
+  socket.on("play", (roomId) => {
+    socket.broadcast.to(roomId).emit("playVideo", "play video");
   });
 
   socket.on("seek", (data) => {
-    console.log("the room is ", data.room);
+    console.log("the room is ", data.roomId);
     console.log(data);
 
     console.log(data.seek);
-    socket.broadcast.to(data.room).emit("seekVideo", data.seek);
+    socket.broadcast.to(data.roomId).emit("seekVideo", data.seek);
   });
 
   socket.on("disconnect", () => {
-    const user = removeUser(socket.id);
+    const session = endSession(socket.id);
 
-    if (user) {
-      io.to(user.room).emit("message", {
+    if (session) {
+      const account = getAccount(session.userId);
+      const room = searchRoomById(session.RoomId);
+      io.to(room.id).emit("message", {
         user: "admin",
-        text: `${user.name} has left`,
+        text: `${account.email} has left`,
       });
     }
   });
