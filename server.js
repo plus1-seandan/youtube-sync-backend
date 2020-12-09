@@ -180,7 +180,7 @@ app.get("/search-myFriends", function (req, res) {
 
 app.post("/create-room", function (req, res) {
   createRoom(req.body);
-  res.send("success");
+  res.send(req.body);
 });
 
 app.post("/add-member", function (req, res) {
