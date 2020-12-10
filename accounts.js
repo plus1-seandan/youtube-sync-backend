@@ -1,7 +1,7 @@
 //server side code
 const { v4: uuidv4 } = require("uuid");
 
-const friends = {};
+const friends = { 1: ["3"], 3: ["1"] };
 
 const accounts = [
   {
@@ -36,7 +36,6 @@ const accounts = [
 
 const createAccount = (newUser) => {
   accounts.push(newUser);
-  // console.log(accounts);
 };
 const verifyAccountCreds = (username) => {
   return accounts.find((account) => account.email === username);
@@ -47,7 +46,6 @@ const getAccount = (userId) => {
 };
 
 const searchAccounts = (query) => {
-  console.log(accounts);
   return accounts.filter((account) => account.email.includes(query));
 };
 
@@ -65,7 +63,6 @@ const searchMyFriends = (userId) => {
 };
 
 const addFriend = (currUserId, userId) => {
-  console.log(currUserId, userId);
   if (!(currUserId in friends)) {
     friends[currUserId] = [];
   }

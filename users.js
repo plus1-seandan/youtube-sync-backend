@@ -2,10 +2,9 @@
 // const users = [];
 const activeSessions = [];
 
-const addSession = (socketId, userId, roomId) => {
-  const session = { socketId: socketId, userId: userId, roomId: roomId };
+const addSession = (peerId, userId, roomId) => {
+  const session = { peerId: peerId, userId: userId, roomId: roomId };
   activeSessions.push(session);
-  console.log(session);
   return session;
 };
 
