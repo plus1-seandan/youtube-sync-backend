@@ -8,7 +8,7 @@ const {
 const {
   getAccount,
   createAccount,
-  verifyAccountCreds,
+  getAccountByUsername,
   searchAccounts,
   searchMyFriends,
   addFriend,
@@ -110,28 +110,31 @@ app.listen(5001, () => {
 });
 
 app.post("/create-account", function (req, res) {
-  createAccount(req.body);
-  res.send("success");
+  const acct = createAccount(req.body);
+  if (!acct) {
+    res.send("ERROR");
+  } else {
+    res.send("SUCCESS");
+  }
 });
 
 app.get("/sign-in", function (req, res) {
-  const acct = verifyAccountCreds(req.query.username);
+  const acct = getAccountByUsername(req.query.username);
   if (acct) {
     if (acct.password == req.query.password) {
       console.log("success");
       res.send(acct);
     } else {
       console.log("fail");
-      res.send("fail");
+      res.send("Incorrect Password");
     }
   } else {
-    console.log("fail");
-    res.send("fail");
+    res.send("Username not found");
   }
 });
 
 app.get("/search-users", function (req, res) {
-  const accts = searchAccounts(req.query.query);
+  const accts = searchAccounts(req.query.query, req.query.acctId);
   res.send(accts);
 });
 
@@ -161,6 +164,7 @@ app.get("/search-myFriends", function (req, res) {
 });
 
 app.post("/create-room", function (req, res) {
+  console.log("trigger create room");
   createRoom(req.body);
   res.send(req.body);
 });

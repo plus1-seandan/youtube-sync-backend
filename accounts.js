@@ -35,9 +35,16 @@ const accounts = [
 ];
 
 const createAccount = (newUser) => {
+  console.log(newUser);
+  //perform validation
+  if (accounts.find((account) => account.email === newUser.email)) {
+    return;
+  }
   accounts.push(newUser);
+  return newUser;
 };
-const verifyAccountCreds = (username) => {
+
+const getAccountByUsername = (username) => {
   return accounts.find((account) => account.email === username);
 };
 
@@ -45,8 +52,24 @@ const getAccount = (userId) => {
   return accounts.find((account) => account.id === userId);
 };
 
-const searchAccounts = (query) => {
-  return accounts.filter((account) => account.email.includes(query));
+const searchAccounts = (query, acctId) => {
+  //get the acctId and the id's friends;
+  const matchedAccts = accounts
+    .filter((account) => account.email.includes(query))
+    .filter((account) => account.id !== acctId);
+
+  const searchList = [];
+  const friendsIds = friends[acctId];
+  for (accts of matchedAccts) {
+    if (friendsIds.includes(accts.id)) {
+      accts.isFriend = true;
+    } else {
+      accts.isFriend = false;
+    }
+    searchList.push(accts);
+  }
+
+  return searchList;
 };
 
 const searchMyFriends = (userId) => {
@@ -79,7 +102,7 @@ module.exports = {
   createAccount,
   getAccount,
   searchAccounts,
-  verifyAccountCreds,
+  getAccountByUsername,
   addFriend,
   removeFriend,
   searchMyFriends,

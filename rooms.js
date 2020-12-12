@@ -23,6 +23,7 @@ const searchMyRooms = (userId) => {
     const room = searchRoomById(myRoomIds[i].roomId);
     myRooms.push(room);
   }
+  // console.log(myRooms);
   return myRooms;
 };
 
