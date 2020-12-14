@@ -1,7 +1,7 @@
 //server side code
 const { v4: uuidv4 } = require("uuid");
 
-const friends = { 1: ["3"], 3: ["1"] };
+const friends = {};
 
 const accounts = [
   {
@@ -54,14 +54,15 @@ const getAccount = (userId) => {
 
 const searchAccounts = (query, acctId) => {
   //get the acctId and the id's friends;
-  const matchedAccts = accounts
-    .filter((account) => account.email.includes(query))
-    .filter((account) => account.id !== acctId);
+  const matchedAccts = accounts.filter((account) =>
+    account.email.includes(query)
+  );
+  // .filter((account) => account.id !== acctId);
 
   const searchList = [];
   const friendsIds = friends[acctId];
   for (accts of matchedAccts) {
-    if (friendsIds.includes(accts.id)) {
+    if (friendsIds && friendsIds.includes(accts.id)) {
       accts.isFriend = true;
     } else {
       accts.isFriend = false;
@@ -74,7 +75,7 @@ const searchAccounts = (query, acctId) => {
 
 const searchMyFriends = (userId) => {
   const myFriends = [];
-  if (!(userId in friends)) {
+  if (!(userId in friends) || friends[userId] == []) {
     return [];
   }
   const myFriendsIdList = friends[userId];
@@ -96,7 +97,11 @@ const addFriend = (currUserId, userId) => {
   friends[userId].push(currUserId);
 };
 
-const removeFriend = (query) => {};
+const removeFriend = (query) => {
+  console.log(query);
+  const index = friends[query.userId].findIndex((x) => x === query.friendId);
+  friends[query.userId].splice(index, 1);
+};
 
 module.exports = {
   createAccount,

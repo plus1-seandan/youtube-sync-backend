@@ -12,6 +12,7 @@ const {
   searchAccounts,
   searchMyFriends,
   addFriend,
+  removeFriend,
 } = require("./accounts.js");
 const {
   createRoom,
@@ -20,6 +21,7 @@ const {
   searchRoomMembers,
   searchMyRooms,
   searchRoomById,
+  removeRoom,
 } = require("./rooms.js");
 
 const express = require("express"),
@@ -60,47 +62,58 @@ const users = {};
 const socketToRoom = {};
 
 io.on("connection", (socket) => {
-  socket.on("join room", (roomID) => {
-    console.log("join room message received");
-    if (users[roomID]) {
-      const length = users[roomID].length;
-      if (length === 4) {
-        socket.emit("room full");
-        return;
-      }
-      users[roomID].push(socket.id);
-    } else {
-      users[roomID] = [socket.id];
-    }
-    socketToRoom[socket.id] = roomID;
-    const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
+  socket.on("join-room", (data) => {
+    socket.join(data.roomId);
+    socket.broadcast.to(data.roomId).emit("user-joined", data.currUser);
+    // if (users[roomID]) {
+    //   const length = users[roomID].length;
+    //   if (length === 4) {
+    //     socket.emit("room full");
+    //     return;
+    //   }
+    //   users[roomID].push(socket.id);
+    // } else {
+    //   users[roomID] = [socket.id];
+    // }
+    // socketToRoom[socket.id] = roomID;
+    // const usersInThisRoom = users[roomID].filter((id) => id !== socket.id);
 
-    socket.emit("all users", usersInThisRoom);
+    // socket.emit("all users", usersInThisRoom);
   });
 
-  socket.on("sending signal", (payload) => {
-    io.to(payload.userToSignal).emit("user joined", {
-      signal: payload.signal,
-      callerID: payload.callerID,
+  socket.on("send-message", (payload) => {
+    console.log("send message received");
+    socket.broadcast.to(payload.roomId).emit("receive-message", {
+      sender: payload.sender,
+      message: payload.message,
     });
   });
 
-  socket.on("returning signal", (payload) => {
-    io.to(payload.callerID).emit("receiving returned signal", {
-      signal: payload.signal,
-      id: socket.id,
-    });
+  socket.on("load-video", (payload) => {
+    console.log(payload);
+    socket.broadcast.to(payload.roomId).emit("change-video", payload);
   });
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-    const roomID = socketToRoom[socket.id];
-    let room = users[roomID];
-    if (room) {
-      room = room.filter((id) => id !== socket.id);
-      users[roomID] = room;
-    }
-    socket.broadcast.emit("user left", socket.id);
+  socket.on("user-disconnect", (payload) => {
+    console.log("on disconnect");
+    console.log(payload);
+    socket.broadcast
+      .to(payload.roomId)
+      .emit(
+        "user-left",
+        `${socket.id} ${payload.sender.firstName} left the chat`
+      );
+  });
+
+  socket.on("video-play", (payload) => {
+    socket.broadcast.to(payload.roomId).emit("video-play");
+  });
+  socket.on("video-pause", (payload) => {
+    socket.broadcast.to(payload.roomId).emit("video-pause");
+  });
+
+  socket.on("seek-video", (payload) => {
+    socket.broadcast.to(payload.roomId).emit("seek-video", payload.seek);
   });
 });
 // end socket io things
@@ -176,6 +189,20 @@ app.post("/add-member", function (req, res) {
 
 app.post("/add-friend", function (req, res) {
   addFriend(req.body.currUserId, req.body.userId);
+  res.send("success");
+});
+
+app.delete("/delete-friend", function (req, res) {
+  // res.send("success");
+  // console.log(req);
+  removeFriend(req.query);
+  res.send("success");
+});
+
+app.delete("/delete-room", function (req, res) {
+  // res.send("success");
+  // console.log(req);
+  removeRoom(req.query);
   res.send("success");
 });
 

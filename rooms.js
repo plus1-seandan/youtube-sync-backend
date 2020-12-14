@@ -23,7 +23,7 @@ const searchMyRooms = (userId) => {
     const room = searchRoomById(myRoomIds[i].roomId);
     myRooms.push(room);
   }
-  // console.log(myRooms);
+  console.log(myRooms);
   return myRooms;
 };
 
@@ -46,9 +46,25 @@ const addMember = (userId, roomId) => {
     userId: userId,
     online: false,
   };
-
   roomMembers.push(roomMember);
 };
+
+const removeRoom = (data) => {
+  const userId = data.userId;
+  const roomId = data.roomId;
+  // console.log(roomMembers);
+
+  let idx;
+  for (var i = 0; i < roomMembers.length; i += 1) {
+    if (roomMembers.userId === userId && roomMembers.roomId === roomId) {
+      idx = i;
+      break;
+    }
+  }
+  roomMembers.splice(idx, 1);
+  console.log(roomMembers);
+};
+
 module.exports = {
   createRoom,
   addMember,
@@ -56,4 +72,5 @@ module.exports = {
   searchRoomMembers,
   searchMyRooms,
   searchRoomById,
+  removeRoom,
 };
