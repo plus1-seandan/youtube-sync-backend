@@ -1,11 +1,4 @@
 const {
-  addSession,
-  endSession,
-  getUser,
-  getActiveSessionsForRoom,
-} = require("./Users.js");
-
-const {
   getAccount,
   createAccount,
   getAccountByUsername,
@@ -41,7 +34,7 @@ db.authenticate()
   .catch((err) => console.log(err.message));
 // const pool = require("./config/db");
 
-db.sync({ force: true });
+db.sync();
 
 const express = require("express"),
   app = express(),
@@ -109,12 +102,10 @@ io.on("connection", (socket) => {
   socket.on("user-disconnect", (payload) => {
     console.log("on disconnect");
     console.log(payload);
-    socket.broadcast
-      .to(payload.roomId)
-      .emit(
-        "user-left",
-        `${socket.id} ${payload.sender.firstName} left the chat`
-      );
+    socket.broadcast.to(payload.roomId).emit("user-left", {
+      sender: payload.sender,
+      message: `${payload.leaver.firstName} left the chat`,
+    });
   });
 
   socket.on("video-play", (payload) => {

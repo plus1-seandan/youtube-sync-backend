@@ -54,6 +54,20 @@ router.post("/create-room", async (req, res) => {
   }
 });
 
+router.post("/add-member", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(data);
+    AccountRoom.create({
+      AccountId: data.userId,
+      RoomId: data.roomId,
+    });
+    res.send("Success");
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 router.get("/search-room-members", async (req, res) => {
   try {
     const roomId = req.query.roomId;
@@ -78,4 +92,19 @@ router.get("/search-room-members", async (req, res) => {
   }
 });
 
+router.delete("/delete-room", async (req, res) => {
+  try {
+    const data = req.query;
+    console.log(data);
+    AccountRoom.destroy({
+      where: {
+        AccountId: data.userId,
+        RoomId: data.roomId,
+      },
+    });
+    res.send("Success");
+  } catch (err) {
+    console.log(err.message);
+  }
+});
 module.exports = router;

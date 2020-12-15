@@ -63,6 +63,7 @@ router.get("/sign-in", async (req, res) => {
 
 router.get("/search-users", async (req, res) => {
   const data = req.query;
+  console.log(data);
   try {
     Account.findAll({
       where: {
@@ -74,7 +75,7 @@ router.get("/search-users", async (req, res) => {
         {
           model: Friend,
           where: {
-            RequestorId: "6f5eb958-3f12-11eb-b378-0242ac130002",
+            RequestorId: data.acctId,
           },
           required: false,
         },
@@ -97,9 +98,29 @@ router.post("/add-friend", async (req, res) => {
     Friend.create({
       RequestorId: data.currUserId,
       RequesteeId: data.userId,
-    }).then((friend) => {
-      res.send("Success");
+    })
+      .then((friend) => {
+        res.send("Success");
+      })
+      .catch((err) => {
+        console.log(err);
+        res.send("Error");
+      });
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+router.delete("/delete-friend", async (req, res) => {
+  try {
+    const data = req.query;
+    Friend.destroy({
+      where: {
+        RequestorId: data.userId,
+        RequesteeId: data.friendId,
+      },
     });
+    res.send("Success");
   } catch (err) {
     console.log(err.message);
   }
