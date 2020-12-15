@@ -24,6 +24,25 @@ const {
   removeRoom,
 } = require("./rooms.js");
 
+const Room = require("./Models/Room");
+const Account = require("./Models/Account");
+const Friend = require("./Models/Friend");
+const AccountRoom = require("./Models/AccountRoom");
+
+// const AccountRoom = require("./Models/AccountRoom");
+
+//Database
+const db = require("./config/db");
+//Test DB
+db.authenticate()
+  .then(() => {
+    console.log("Database connected successfully");
+  })
+  .catch((err) => console.log(err.message));
+// const pool = require("./config/db");
+
+db.sync({ force: true });
+
 const express = require("express"),
   app = express(),
   bodyParser = require("body-parser");
@@ -37,8 +56,6 @@ const socketio = require("socket.io");
 
 const http = require("http");
 
-// const app = express();
-
 const server = http.createServer(app);
 
 var cors = require("cors");
@@ -51,15 +68,10 @@ const io = require("socket.io")(server, {
   },
 });
 
-const router = require("./router");
+const router = require("./Routes");
 const { callbackify } = require("util");
 
 const PORT = process.env.PORT || 5000;
-
-//socket io things
-const users = {};
-
-const socketToRoom = {};
 
 io.on("connection", (socket) => {
   socket.on("join-room", (data) => {
@@ -118,10 +130,22 @@ io.on("connection", (socket) => {
 });
 // end socket io things
 
-app.listen(5001, () => {
-  console.log("Server Listening on port 5001 hey lets go");
-});
+app.use(router);
+app.listen(5001, () =>
+  console.log("server has started on port! hey lets go: " + 5001)
+);
+server.listen(PORT, () =>
+  console.log("server has started on port! hey lets go: " + PORT)
+);
 
+// app.listen(5001, () =>
+//   console.log("server has started on port! hey lets go: " + 5001)
+// );
+// server.listen(PORT, () =>
+//   console.log("server has started on port! hey lets go: " + PORT)
+// );
+
+/*
 app.post("/create-account", function (req, res) {
   const acct = createAccount(req.body);
   if (!acct) {
@@ -210,3 +234,20 @@ app.use(router);
 server.listen(PORT, () =>
   console.log("server has started on port! hey lets go: " + PORT)
 );
+
+//ROUTES
+app.post("/accounts", async (req, res) => {
+  //await
+  try {
+    const { firstName } = req.body;
+    const newAccount = await pool.query(
+      "INSERT INTO accounts (first_name) VALUES($1)",
+      [firstName]
+    );
+    res.json(newAccount);
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+*/
