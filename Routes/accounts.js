@@ -6,7 +6,6 @@ const { Op } = require("sequelize");
 const Friend = require("../Models/Friend");
 
 router.get("/", (req, res) => {
-  console.log("account path hit");
   res.send("this worked");
 });
 
@@ -18,7 +17,6 @@ router.post("/create-account", async (req, res) => {
         email: loginAcct.email,
       },
     }).then((accounts) => {
-      console.log(accounts);
       if (accounts.length !== 0) {
         res.send("Failed");
         return;
@@ -61,9 +59,31 @@ router.get("/sign-in", async (req, res) => {
   }
 });
 
+router.get("/search-friends", async (req, res) => {
+  const acct = req.query;
+
+  try {
+    Account.findAll({
+      include: [
+        {
+          model: Friend,
+          where: {
+            RequestorId: acct.userId,
+          },
+          required: true,
+        },
+      ],
+      raw: true,
+    }).then((accounts) => {
+      res.send(accounts);
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+
 router.get("/search-users", async (req, res) => {
   const data = req.query;
-  console.log(data);
   try {
     Account.findAll({
       where: {
@@ -92,8 +112,6 @@ router.get("/search-users", async (req, res) => {
 router.post("/add-friend", async (req, res) => {
   try {
     const data = req.body;
-    console.log("printing add - friend data ");
-    console.log(data);
 
     Friend.create({
       RequestorId: data.currUserId,
@@ -127,55 +145,3 @@ router.delete("/delete-friend", async (req, res) => {
 });
 
 module.exports = router;
-
-// router.post("/create-account", async (req, res) => {
-//   try {
-//     const newAccount = req.body;
-//     const validateAcct = await pool.query(
-//       "SELECT account_id, email FROM accounts WHERE email = $1",
-//       [newAccount.email]
-//     );
-//     console.log(validateAcct.rows);
-//     if (validateAcct.rows.length !== 0) {
-//       console.log("user found");
-//       res.send("Failed");
-//       return;
-//     }
-//     try {
-//       const validateAcct = await pool.query(
-//         "INSERT INTO accounts (account_id, first_name, last_name, email, password) VALUES ($1,$2,$3,$4, $5)",
-//         [
-//           newAccount.id,
-//           newAccount.firstName,
-//           newAccount.lastName,
-//           newAccount.email,
-//           newAccount.password,
-//         ]
-//       );
-//       console.log("success");
-//       res.send("Success");
-//     } catch (err) {
-//       console.log(err.message);
-//     }
-//   } catch (err) {
-//     console.log(err.message);
-//   }
-// });
-
-// router.get("/sign-in", async (req, res) => {
-//   try {
-//     const acct = req.query;
-//     console.log(acct);
-//     const validateAcct = await pool.query(
-//       "SELECT email, password FROM accounts WHERE email=$1 AND password=$2",
-//       [acct.username, acct.password]
-//     );
-//     if (validateAcct.rows.length === 0) {
-//       res.send("Failed");
-//       return;
-//     }
-//     res.send("Success");
-//   } catch (err) {
-//     console.log(err.message);
-//   }
-// });

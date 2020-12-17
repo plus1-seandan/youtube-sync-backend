@@ -8,7 +8,6 @@ const Account = require("../Models/Account");
 router.get("/get-my-rooms", async (req, res) => {
   try {
     const userId = req.query.userId;
-    console.log(userId);
     const myRooms = await Room.findAll({
       include: [
         {
@@ -22,7 +21,6 @@ router.get("/get-my-rooms", async (req, res) => {
       ],
       raw: true,
     });
-    console.log(myRooms);
     res.json(myRooms);
   } catch (err) {
     console.log(err.message);
@@ -32,7 +30,6 @@ router.get("/get-my-rooms", async (req, res) => {
 router.post("/create-room", async (req, res) => {
   try {
     const data = req.body;
-    console.log(data);
     Room.create({
       name: data.room.name,
       private: data.room.isPrivate,
@@ -57,7 +54,6 @@ router.post("/create-room", async (req, res) => {
 router.post("/add-member", async (req, res) => {
   try {
     const data = req.body;
-    console.log(data);
     AccountRoom.create({
       AccountId: data.userId,
       RoomId: data.roomId,
@@ -83,7 +79,6 @@ router.get("/search-room-members", async (req, res) => {
         where: { id: arr },
         raw: true,
       }).then((roomMembers) => {
-        console.log(roomMembers);
         res.send(roomMembers);
       });
     });
@@ -95,7 +90,6 @@ router.get("/search-room-members", async (req, res) => {
 router.delete("/delete-room", async (req, res) => {
   try {
     const data = req.query;
-    console.log(data);
     AccountRoom.destroy({
       where: {
         AccountId: data.userId,
