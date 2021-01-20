@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 // const pool = require("../config/db");
-const Account = require("../Models/Account");
+const Account = require("../models/account");
 const { Op } = require("sequelize");
-const Friend = require("../Models/Friend");
+const Friend = require("../models/friend");
 
 router.get("/", (req, res) => {
   res.send("this worked");

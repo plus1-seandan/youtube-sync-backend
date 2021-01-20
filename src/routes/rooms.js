@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 // const pool = require("../config/db");
-const Room = require("../Models/Room");
-const AccountRoom = require("../Models/AccountRoom");
-const Account = require("../Models/Account");
+const Room = require("../models/room");
+const AccountRoom = require("../models/accountRoom");
+const Account = require("../models/account");
 
 router.get("/get-my-rooms", async (req, res) => {
   try {
