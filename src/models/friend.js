@@ -1,7 +1,17 @@
 const Sequelize = require("sequelize");
 const db = require("../config/db");
-const Account = require("./account");
 
-const Friend = db.define("friend", {});
+const Friend = db.define(
+  "friend",
+  {
+    status: {
+      type: Sequelize.STRING,
+      defaultValue: "pending",
+    },
+  },
+  {
+    underscored: true,
+  }
+);
 
 module.exports = Friend;

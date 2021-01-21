@@ -1,8 +1,5 @@
 const Sequelize = require("sequelize");
 const db = require("../config/db");
-const AccountRoom = require("./accountRoom");
-const Friend = require("./friend");
-const Room = require("./room");
 
 const Account = db.define(
   "account",
@@ -31,10 +28,7 @@ const Account = db.define(
     },
   },
   {
-    timestamps: true,
-    defaultScope: {
-      attributes: { exclude: ["password"] },
-    },
+    underscored: true,
   }
 );
 
@@ -43,20 +37,19 @@ Account.associate = (models) => {
     through: {
       model: models.AccountRoom,
     },
-    foreignKey: "accountId",
+    foreignKey: "account_id",
   });
   Account.belongsToMany(models.Account, {
-    through: Friend,
-    foreignKey: "RequestorId",
-    as: "Requestor",
+    through: models.Friend,
+    foreignKey: "accountId",
+    as: "accountId",
   });
 
   Account.belongsToMany(models.Account, {
-    through: Friend,
-    foreignKey: "RequesteeId",
-    as: "Requestee",
+    through: models.Friend,
+    foreignKey: "friendId",
+    as: "friend(d",
   });
 };
 
 module.exports = Account;
-

@@ -18,23 +18,9 @@ const Room = db.define(
       type: Sequelize.BOOLEAN,
       allowNull: false,
     },
-    password: {
-      type: Sequelize.STRING,
-      allowNull: true,
-      validate: {
-        customValidator(value) {
-          if (value === null && private) {
-            throw new Error("Private Rooms require a password");
-          }
-        },
-      },
-    },
   },
   {
-    timestamps: true,
-    defaultScope: {
-      attributes: { exclude: ["password"] },
-    },
+    underscored: true,
   }
 );
 
@@ -43,7 +29,7 @@ Room.associate = (models) => {
     through: {
       model: models.AccountRoom,
     },
-    foreignKey: "roomId",
+    foreignKey: "room_id",
   });
 
   // Room.hasMany(AccountRoom);
