@@ -1,13 +1,24 @@
 const express = require("express");
 const router = express.Router();
 // const pool = require("../config/db");
-const Account = require("../Models/Account");
+const Account = require("../models/account");
 const { Op } = require("sequelize");
-const Friend = require("../Models/Friend");
+const Friend = require("../models/friend");
+const passport = require("passport");
 
-router.get("/", (req, res) => {
-  res.send("this worked");
-});
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      res.send(req.user);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
 
 router.post("/create-account", async (req, res) => {
   const loginAcct = req.body;

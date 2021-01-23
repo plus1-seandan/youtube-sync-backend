@@ -1,9 +1,59 @@
 const express = require("express");
 const router = express.Router();
-// const pool = require("../config/db");
-const Room = require("../Models/Room");
-const AccountRoom = require("../Models/AccountRoom");
-const Account = require("../Models/Account");
+const passport = require("passport");
+const { getMyRooms, createRoom, getRoomMembers } = require("../util/room");
+
+router.get(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const acctId = req.user.id;
+      const myRooms = await getMyRooms(acctId);
+      console.log({ myRooms });
+      res.send(myRooms);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
+
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const acctId = req.user.id;
+      console.log({ body: req.body });
+      const newRoom = await createRoom(acctId, req.body);
+      console.log({ newRoom });
+      res.send(newRoom);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
+
+router.get(
+  "/members",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const roomId = req.query.id;
+      const members = await getRoomMembers(roomId);
+      console.log(members);
+      res.send(members);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
 
 router.get("/get-my-rooms", async (req, res) => {
   try {

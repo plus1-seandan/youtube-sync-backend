@@ -5,18 +5,22 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
+    "start": "nodemon --exec node src/server.js",
     "server": "nodemon server.js"
   },
   "author": "Sean Dan",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "concurrently": "^5.3.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "googleapis": "^66.0.0",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
     "peer": "^0.6.1",
     "peerjs": "^1.3.1",
     "pg": "^8.5.1",
@@ -27,7 +31,7 @@
     "ws": "^7.4.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.7"
   },
   "engines": {
     "node": "14.15.1"
