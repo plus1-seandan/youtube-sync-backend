@@ -5,6 +5,9 @@ const Account = require("../models/account");
 const { Op } = require("sequelize");
 const Friend = require("../models/friend");
 const passport = require("passport");
+const models = require("../models");
+
+const PAGE_SIZE = 10;
 
 router.get(
   "/",
@@ -19,6 +22,41 @@ router.get(
     }
   }
 );
+
+router.get(
+  "/search",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      // res.send(req.user);
+      const { search, page } = req.query;
+
+      const acctCount = await models.Account.count({
+        where: { email: { [Op.like]: `%${search}%` } },
+      });
+
+      const pages = parseInt(acctCount / PAGE_SIZE);
+
+      const accts = await getUsers(page, search);
+
+      res.send({ pages, accts });
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
+
+const getUsers = async (page, query) => {
+  const skip = (page - 1) * PAGE_SIZE;
+  return await models.Account.findAll({
+    where: { email: { [Op.like]: `%${query}%` } },
+    offset: skip,
+    limit: PAGE_SIZE,
+    order: [["email", "ASC"]],
+  });
+};
 
 router.post("/create-account", async (req, res) => {
   const loginAcct = req.body;

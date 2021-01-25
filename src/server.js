@@ -39,7 +39,6 @@ const main = async () => {
   });
 
   io.on("connection", socketActions);
-
   app.use(router);
   app.listen(5001, () => console.log("server has started on port: " + 5001));
   server.listen(PORT, () => console.log("server has started on port: " + PORT));
