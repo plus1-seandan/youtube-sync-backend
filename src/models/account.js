@@ -48,7 +48,7 @@ Account.associate = (models) => {
   Account.belongsToMany(models.Account, {
     through: models.Friend,
     foreignKey: "friendId",
-    as: "friend(d",
+    as: "friendId",
   });
 };
 

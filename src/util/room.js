@@ -2,6 +2,7 @@ const { QueryTypes } = require("sequelize");
 const db = require("../config/db");
 
 const models = require("../models");
+const { getAccountById } = require("./account");
 
 const getMyRooms = async (acctId) => {
   const myRooms = await db.query(
@@ -48,4 +49,16 @@ const getRoomMembers = async (roomId) => {
   }
 };
 
-module.exports = { getMyRooms, createRoom, getRoomMembers };
+const addMemberToRoom = async (acctId, roomId) => {
+  try {
+    await models.AccountRoom.create({
+      room_id: roomId,
+      account_id: acctId,
+    });
+    return await getAccountById(acctId);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+module.exports = { getMyRooms, createRoom, getRoomMembers, addMemberToRoom };

@@ -22,9 +22,7 @@ const getFriendsAcctIds = async (acctId) => {
 const getMyFriends = async (acctId) => {
   try {
     const friends = await getFriendsAcctIds(acctId);
-    console.log({ friends });
     const promises = friends.map(async (friend) => {
-      console.log({ friend });
       return await getAccountById(friend.friend_id);
     });
     return await Promise.all(promises);
@@ -33,4 +31,7 @@ const getMyFriends = async (acctId) => {
   }
 };
 
-module.exports = { getMyFriends };
+const sendFriendRequest = async (acctId, friendId) => {
+  await models.Friend.create({ account_id: acctId, friend_id: friendId });
+};
+module.exports = { getMyFriends, sendFriendRequest };

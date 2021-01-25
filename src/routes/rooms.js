@@ -1,7 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const { getMyRooms, createRoom, getRoomMembers } = require("../util/room");
+const {
+  getMyRooms,
+  createRoom,
+  getRoomMembers,
+  addMemberToRoom,
+} = require("../util/room");
 
 router.get(
   "/",
@@ -45,8 +50,25 @@ router.get(
     try {
       const roomId = req.query.id;
       const members = await getRoomMembers(roomId);
-      console.log(members);
       res.send(members);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
+
+router.post(
+  "/members",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const memberId = req.query.memberId;
+      const roomId = req.query.roomId;
+
+      const member = await addMemberToRoom(memberId, roomId);
+      res.send(member);
     } catch (error) {
       res.status(400).send({
         message: error.message,
