@@ -6,6 +6,8 @@ const {
   createRoom,
   getRoomMembers,
   addMemberToRoom,
+  getRoom,
+  getPublicRooms,
 } = require("../util/room");
 
 router.get(
@@ -15,8 +17,38 @@ router.get(
     try {
       const acctId = req.user.id;
       const myRooms = await getMyRooms(acctId);
-      console.log({ myRooms });
       res.send(myRooms);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
+
+router.get(
+  "/public",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const rooms = await getPublicRooms();
+      res.send(rooms);
+    } catch (error) {
+      res.status(400).send({
+        message: error.message,
+      });
+    }
+  }
+);
+
+router.get(
+  "/id",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const roomId = req.query.id;
+      const data = await getRoom(roomId);
+      res.send(data);
     } catch (error) {
       res.status(400).send({
         message: error.message,
@@ -31,9 +63,7 @@ router.post(
   async (req, res) => {
     try {
       const acctId = req.user.id;
-      console.log({ body: req.body });
       const newRoom = await createRoom(acctId, req.body);
-      console.log({ newRoom });
       res.send(newRoom);
     } catch (error) {
       res.status(400).send({

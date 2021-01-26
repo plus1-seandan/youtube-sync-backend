@@ -11,7 +11,6 @@ router.get(
     try {
       const acctId = req.user.id;
       const myFriends = await getMyFriends(acctId);
-      console.log({ myFriends });
       res.send(myFriends);
     } catch (error) {
       res.status(400).send({
