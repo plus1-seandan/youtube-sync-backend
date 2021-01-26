@@ -17,6 +17,10 @@ const getMyRooms = async (acctId) => {
   return myRooms;
 };
 
+const getRoom = async (roomId) => {
+  return await models.Room.findOne({ where: { id: roomId } });
+};
+
 const createRoom = async (acctId, room) => {
   try {
     //create new room
@@ -30,6 +34,10 @@ const createRoom = async (acctId, room) => {
   } catch (e) {
     console.log(e);
   }
+};
+const getPublicRooms = async () => {
+  const rooms = await models.Room.findAll({ where: { private: false } });
+  return rooms;
 };
 
 const getRoomMembers = async (roomId) => {
@@ -61,4 +69,11 @@ const addMemberToRoom = async (acctId, roomId) => {
   }
 };
 
-module.exports = { getMyRooms, createRoom, getRoomMembers, addMemberToRoom };
+module.exports = {
+  getMyRooms,
+  createRoom,
+  getRoomMembers,
+  addMemberToRoom,
+  getRoom,
+  getPublicRooms,
+};

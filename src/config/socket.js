@@ -1,3 +1,4 @@
+const models = require("../models");
 const { getAccountById } = require("../util/account");
 
 async function socketActions(socket) {
@@ -20,7 +21,11 @@ async function socketActions(socket) {
     });
   });
 
-  socket.on("load-video", (payload) => {
+  socket.on("load-video", async (payload) => {
+    await models.Room.update(
+      { video: payload.video },
+      { where: { id: payload.roomId } }
+    );
     socket.broadcast.to(payload.roomId).emit("change-video", payload);
   });
 
@@ -32,14 +37,27 @@ async function socketActions(socket) {
     });
   });
 
-  socket.on("video-play", (payload) => {
+  socket.on("video-play", async (payload) => {
+    await models.Room.update(
+      { playing: true },
+      { where: { id: payload.roomId } }
+    );
     socket.broadcast.to(payload.roomId).emit("video-play");
   });
-  socket.on("video-pause", (payload) => {
+
+  socket.on("video-pause", async (payload) => {
+    await models.Room.update(
+      { playing: false },
+      { where: { id: payload.roomId } }
+    );
     socket.broadcast.to(payload.roomId).emit("video-pause");
   });
 
-  socket.on("seek-video", (payload) => {
+  socket.on("seek-video", async (payload) => {
+    await models.Room.update(
+      { played: payload.seek },
+      { where: { id: payload.roomId } }
+    );
     socket.broadcast.to(payload.roomId).emit("seek-video", payload.seek);
   });
 }
