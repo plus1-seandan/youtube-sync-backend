@@ -1,8 +1,8 @@
 ![](logo.png)
 
-# SeanPreme - Server
+# YoutubeSync - Server
 
-Backend for the SeanPreme eCommerce website.
+Backend for the YoutubeSync website.
 
 Note: This is in combination with the backend project ([repo](https://github.com/seanysdan/youtube-sync-frontend)).
 
