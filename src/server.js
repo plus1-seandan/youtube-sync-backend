@@ -24,24 +24,23 @@ const main = async () => {
   //add middleware
   const app = express();
   app.use(cors()); // Use this after the variable declaration
+  const server = require("http").createServer(app);
+  const io = socketio(server, {
+    cors: {
+      origin: ["http://localhost:3000", "http://inconclusive-journey.surge.sh"],
+    },
+  });
   app.use(passport.initialize());
 
   setupPassport(passport);
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
-  const server = http.createServer(app);
-  //establish socket io connection
-  const io = require("socket.io")(server, {
-    cors: {
-      origin: "*",
-    },
-  });
-
   io.on("connection", socketActions);
   app.use(router);
-  app.listen(5001, () => console.log("server has started on port: " + 5001));
-  server.listen(PORT, () => console.log("server has started on port: " + PORT));
+  // app.listen(5001, () => console.log("server has started on port: " + 5001));
+  server.listen(5001);
+  // server.listen(PORT, () => console.log("server has started on port: " + PORT));
 };
 
 try {
